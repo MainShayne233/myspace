@@ -5,7 +5,7 @@ IFS=$'\n\t'
 shopt -s extdebug
 
 main() {
-    deno run --allow-net --allow-env src/main.ts
+    deno run --allow-read --allow-net --allow-env src/main.ts
 }
 
 main "$@"
