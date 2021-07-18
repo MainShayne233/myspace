@@ -1,4 +1,5 @@
 import Aqua, { Request, Response } from "https://deno.land/x/aqua/mod.ts";
+import ContentHandler from "https://deno.land/x/aqua@v1.1.4/content_handler.ts";
 import home from "./pages/home/main.ts";
 
 const port = parseInt(Deno.env.get("PORT") || "4000");
@@ -28,6 +29,23 @@ app.get("/assets/:asset", async (req) => {
   const res = await app.render(path);
   return res;
 });
+
+
+app.register((req, res) => {
+  const contentType = ContentHandler.getContentType(extension(req.url));
+  if (contentType) {
+  return { ...res, headers: { ...res.headers, "Content-Type": contentType}};
+  } else {
+    return res;
+  }
+});
+
+function extension(path: string): string {
+  return path.replace(
+    /.*(?=\.[a-zA-Z0-9_]*$)/,
+    "",
+  );
+}
 
 function staticPathForPage(req: Request) {
   return "build/static" +
