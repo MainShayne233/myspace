@@ -5,7 +5,15 @@ IFS=$'\n\t'
 shopt -s extdebug
 
 main() {
-    git push heroku master
+    git branch -D deploy
+    git switch -c deploy
+    git reset --hard master
+    bin/build
+    git add --force build
+    git commit -m "Add production build files"
+    git push heroku +deploy:master
+    git checkout master
+    git branch -D deploy
 }
 
 main "$@"
