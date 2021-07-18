@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -CEeuo pipefail
+IFS=$'\n\t'
+shopt -s extdebug
+
+main() {
+    name="$1"
+    path="$2"
+
+    echo "$name $path"
+
+    (
+        cd "$path"
+        elm-boil build -o "../../../build/static/$name"
+    )
+}
+
+main "$@"
+

@@ -1,0 +1,58 @@
+#!/usr/bin/env -S deno run --unstable --allow-read --allow-run --allow-write
+
+import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import { emptyDirSync } from "https://deno.land/std@0.101.0/fs/empty_dir.ts";
+
+function appType(path) {
+  if (existsSync(path + "/elm.json")) {
+    return "elm";
+  } else {
+    throw new Error("Unknown app type at: " + path);
+  }
+}
+
+function pages() {
+  const pages = [];
+
+  for (const { name, isDirectory } of Deno.readDirSync("src/pages")) {
+    if (isDirectory) {
+      const path = "src/pages/" + name;
+      const type = appType(path);
+      pages.push({
+        name,
+        path,
+        type,
+      });
+    }
+  }
+
+  return pages;
+}
+
+async function buildElmApp(page) {
+  const process = Deno.run({
+    cmd: ["bin/util/build-elm", page.name, page.path],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const { code } = await process.status();
+  if (code !== 0) {
+    throw new Error(
+      "Build failed for page at: " + page.path + ". Error code: " + code,
+    );
+  }
+  process.close();
+}
+
+async function main() {
+  emptyDirSync("build");
+  await pages().map((page) => {
+    if (page.type === "elm") {
+      return buildElmApp(page);
+    } else {
+      throw new Error("Not sure how to build app of type: " + page.type);
+    }
+  });
+}
+
+await main();

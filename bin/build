@@ -5,10 +5,7 @@ IFS=$'\n\t'
 shopt -s extdebug
 
 main() {
-    (
-        cd src/pages/home
-        elm-boil build -o ../../../build/static/home
-    )
+    bin/build-static-assets
 }
 
 main "$@"
