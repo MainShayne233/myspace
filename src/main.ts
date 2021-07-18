@@ -1,6 +1,5 @@
 import Aqua, { Request, Response } from "https://deno.land/x/aqua/mod.ts";
 import ContentHandler from "https://deno.land/x/aqua@v1.1.4/content_handler.ts";
-import home from "./pages/home/main.ts";
 
 const port = parseInt(Deno.env.get("PORT") || "4000");
 
@@ -10,10 +9,10 @@ app.get("/", (_req) => {
   return { redirect: "/home" };
 });
 
-app.get("/home", (req) => home(req, app));
-
-app.get("/style.min.css", (_req) => {
-  return "";
+app.get(new RegExp("\/(home|hi)"), async (req) => {
+  const [page] = req.matches;
+  const path = "build/static/" + page + "/index.html";
+  return await app.render(path);
 });
 
 app.get(new RegExp("/(script|style).min\.(.*)\.(js|css)"), async (req) => {
