@@ -5,7 +5,6 @@ IFS=$'\n\t'
 shopt -s extdebug
 
 main() {
-    git branch -D deploy
     git switch -c deploy
     git reset --hard master
     bin/build

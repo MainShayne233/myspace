@@ -23,5 +23,5 @@ import AppEnv exposing (appName)
 main : Html msg
 main =
   div [] [
-      h1 [ class "main-header" ] [ text "Welcome home 😌" ]
+      img [ src "./assets/tenor.gif" ] []
     ]

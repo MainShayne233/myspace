@@ -5,7 +5,7 @@ IFS=$'\n\t'
 shopt -s extdebug
 
 main() {
-    bin/build-static-assets
+    bin/util/build-static-assets
 }
 
 main "$@"
