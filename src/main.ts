@@ -9,7 +9,18 @@ app.get("/", (_req) => {
   return { redirect: "/home" };
 });
 
-app.get(new RegExp("\/(home|hi)"), async (req) => {
+function pageNamesRegEx() {
+  const pages = [];
+
+  for (const { name, isDirectory } of Deno.readDirSync("src/pages")) {
+    if (isDirectory) {
+      pages.push(name);
+    }
+  }
+  return new RegExp("/(" + pages.join("|") + ")");
+}
+
+app.get(pageNamesRegEx(), async (req) => {
   const [page] = req.matches;
   const path = "build/static/" + page + "/index.html";
   return await app.render(path);
@@ -25,15 +36,15 @@ app.get(new RegExp("/(script|style).min\.(.*)\.(js|css)"), async (req) => {
 app.get("/assets/:asset", async (req) => {
   const staticPath = staticPathForPage(req);
   const path = staticPath + "/assets/" + req.parameters.asset;
+  console.log(path)
   const res = await app.render(path);
   return res;
 });
 
-
 app.register((req, res) => {
   const contentType = ContentHandler.getContentType(extension(req.url));
   if (contentType) {
-  return { ...res, headers: { ...res.headers, "Content-Type": contentType}};
+    return { ...res, headers: { ...res.headers, "Content-Type": contentType } };
   } else {
     return res;
   }
@@ -47,8 +58,9 @@ function extension(path: string): string {
 }
 
 function staticPathForPage(req: Request) {
+  console.log(req)
   return "build/static" +
-    req.headers.referer.replace(new RegExp("https?://"), "").replace(
+    (req.headers.referer || "").replace(new RegExp("https?://"), "").replace(
       req.headers.host,
       "",
     );
