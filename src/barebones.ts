@@ -1,17 +1,10 @@
 import ContentHandler from "https://deno.land/x/aqua@v1.1.4/content_handler.ts";
-import {existsSync } from "https://deno.land/std/fs/mod.ts";
 
-const host = "localhost:4000"
-const httpHeader = "http://"
+const port = parseInt(Deno.env.get("PORT") || "4000");
+const host = Deno.env.get("HOST") || `localhost:${port}`;
+const httpHeader = Deno.env.get("HTTP_HEADER") || "http://";
 
-const server = Deno.listen({ port: 4000 });
-
-enum Payload {
-  HTML,
-  Style,
-  Script,
-  Image
-}
+const server = Deno.listen({ port });
 
 for await (const conn of server) {
   (async () => {
@@ -22,7 +15,7 @@ for await (const conn of server) {
   })();
 }
 
-async function hanldeRequest(requestEvent: Deno.RequestEvent) {
+function hanldeRequest(requestEvent: Deno.RequestEvent) {
   if (removeHttpHeader(requestEvent.request.url).split("/")[0] === host) {
     redirectTo(requestEvent, `home.${host}`);
     return
@@ -63,15 +56,6 @@ function getExtension(requestEvent: Deno.RequestEvent) {
   return extension(requestEvent.request.url);
 }
 
-function getHost(requestEvent: Deno.RequestEvent) {
-  const host = requestEvent.request.headers.get("host");
-  if (host) return host;
-  else {
-    throw new Error("No host for request: " + requestEvent.request.url);
-  }
-}
-
-
 function getFileName(requestEvent: Deno.RequestEvent) {
   const url = requestEvent.request.url
   const host = requestEvent.request.headers.get("host");
@@ -83,7 +67,7 @@ function getFileName(requestEvent: Deno.RequestEvent) {
   return url.replace(new RegExp("https?://"), "").replace(host, "").split("/").slice(-1)[0];
 }
 
-async function serveFile(requestEvent: Deno.RequestEvent, path: string) {
+function serveFile(requestEvent: Deno.RequestEvent, path: string) {
   Deno.readFile(path).then((data) => {
     requestEvent.respondWith(
       new Response(data, {
@@ -102,7 +86,7 @@ async function serveFile(requestEvent: Deno.RequestEvent, path: string) {
   })
 }
 
-async function redirectTo(requestEvent: Deno.RequestEvent, url: string) {
+function redirectTo(requestEvent: Deno.RequestEvent, url: string) {
   requestEvent.respondWith(
     new Response(null, {
       status: 301,
@@ -112,8 +96,6 @@ async function redirectTo(requestEvent: Deno.RequestEvent, url: string) {
     }),
   );
 }
-
-
 
 function contentType(path: string) {
   const contentType = ContentHandler.getContentType(extension(path));
@@ -130,4 +112,3 @@ function extension(path: string): string {
     "",
   );
 }
-
