@@ -10,6 +10,7 @@ for await (const conn of server) {
   (async () => {
     const httpConn = Deno.serveHttp(conn);
     for await (const requestEvent of httpConn) {
+      console.log("Handling request for: ", requestEvent.request.url);
       hanldeRequest(requestEvent)
     }
   })();
